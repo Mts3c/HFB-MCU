@@ -1,8 +1,8 @@
 # HFB-MCU
  
-/nHardwarePins via #define in HfbM.h
+/n HardwarePins via #define in HfbM.h
 
-/n2DO:
+/n 2DO:
  -Test & Debug Firmware Core
  -Develope Screenpages
  -Hardware PCB Design
