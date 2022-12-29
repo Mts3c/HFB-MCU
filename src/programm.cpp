@@ -17,14 +17,16 @@ HfbM maschine;
 
 void setup() 
 {
-maschine.hwSetup();
-maschine.displayTest();
+    //Setup funktionen
+    maschine.hwSetup();
+    maschine.displayTest();
 
+    //2DO: Taskmanger 
 }
 
 void loop() 
 {
 
-
+    //2DO: Taskmanger 
 
 }

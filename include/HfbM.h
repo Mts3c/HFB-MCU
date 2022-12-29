@@ -10,7 +10,11 @@ Zuletzt geaändert am:
 #include <Arduino.h>
 #include <cstring>
 #include <HardwareSerial.h> 
-#include "ILI9341_t3n.h"
+#include "Adafruit_GFX.h"
+#include "Adafruit_ILI9341.h"
+#include <Fonts/FreeSansBold9pt7b.h>
+#include "SPI.h"
+
 
 //Namespace define
 namespace teensydmx = ::qindesign::teensydmx;
@@ -43,7 +47,7 @@ class HfbM
     //Memberobjekt von Klasse teensydmx
      teensydmx::Receiver dmxRx;
     //Memberobjekt von Klasse ILI9341_t3n
-     ILI9341_t3n tft;
+     Adafruit_ILI9341 tft;
 
     //DMX-Kanalvariabeln
     int chHV;
@@ -57,10 +61,14 @@ class HfbM
     std::string typ;
     std::string name;
     std::string dmxProfil;
+
     unsigned int kanalAnz;
     unsigned int startKanal;
     bool istAktiv;
     bool dmxAktiv;
+    bool dmxFehler;
+
+    bool tastenSperre;
 
     //Variabeln/ Parameter der einzel Module
     bool heliumVentil;
@@ -81,17 +89,20 @@ class HfbM
 
  public:
  //Defaultkonstruktor
-    HfbM() : dmxRx(serialPort),  tft(TFT_CS, TFT_DC, TFT_RST, TFT_MOSI, TFT_CLK, TFT_MISO)
+    HfbM() : dmxRx(serialPort),  tft(TFT_CS, TFT_DC)
     {
         //Serial debug init
         firmwareNum = "V0.1 PTyp1";
         name = "HFB-Maschine";
         typ = "Prototyp 1";
         dmxProfil ="6CH manual";
+
         kanalAnz = 6;
         startKanal = 1;
         istAktiv = true;
         dmxAktiv = true;
+        dmxFehler =false;
+        tastenSperre = false;
 
         chHV = 1;
         chHF = 2;
@@ -127,6 +138,15 @@ class HfbM
     void dmxSetup(int chHv, int chHf, int chFog, int chFan, int chWheel);
     //Methode um Startkanal einzustellen
     void setFirstDmxCh(int ch);
+
+    //Display Stuff
     //Schreibt Hello World auf Display
     void displayTest();
+    //GUI Methoden
+    void mainScreen();
+    void manualScreen();
+    void dispDmxSq();
+    void drawLock();
+    void drawUnlock();
+    void switchLock();
 };
