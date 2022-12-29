@@ -7,13 +7,19 @@ Zuletzt geaändert am:
 #include "HfbM.h"
 
     
+
+    /// @brief Hardware Setup Methode für Settup Schleife
     void HfbM::hwSetup()
     {
-     this->dmxRx.begin();
-     this->tft.begin();
+        //DMX
+        this->dmxRx.begin();
+
+        //Display Stuff
+        this->tft.begin();
+        this->tft.setRotation(3);
     }
 
-    //Methode aktualisiert das DMXWerte Array
+    /// @brief Methode aktualisiert das DMXWerte Array
     void HfbM::getDmxFrame()
     {
     int read = dmxRx.readPacket(packetBuf, startKanal, DMXCH);
@@ -24,7 +30,7 @@ Zuletzt geaändert am:
     }
     }
 
-    //Methode um Parameter der komponenten aus DMXV Array zu bestimmen
+    /// @brief Methode um Parameter der komponenten aus DMXV Array zu bestimmen
     void HfbM::getParams()
     {
         if(dmxValues[chHV-1] >= 225) heliumVentil = true;
@@ -35,7 +41,7 @@ Zuletzt geaändert am:
         nebelWert = dmxValues[chFOG-1];
     }
 
-    //Methode um alle aktuellen Parameter auf die entsprechenden Module anzuwenden
+    /// @brief Methode um alle aktuellen Parameter auf die entsprechenden Module anzuwenden
     void HfbM::updateDevice()
     {
         digitalWrite(HVpin, heliumVentil);
@@ -45,7 +51,13 @@ Zuletzt geaändert am:
         analogWrite(FOGpin, nebelWert);
     }
 
-    //Methode um DMXKanäle des Geräts, inkluse des Startkanals zuzuweisen
+    /// @brief Methode um DMXKanäle des Geräts, inklusive des Startkanals zuzuweisen
+    /// @param chHv Dmx Kanal des Heliumventils
+    /// @param chHf Dmx Kanal des Heliumdurchflussventils
+    /// @param chFog Dmx Kanal für Nebelmaschine
+    /// @param chFan  Dmx Kanal für PWM Lüfter
+    /// @param chWheel Dmx Kanal für Bubblewheel
+    /// @param ch Dmx StartKanal dür fortlaufendes Kanalmapping
     void HfbM::dmxSetup(int chHv, int chHf, int chFog, int chFan, int chWheel, int ch)
     {
         this->chHV = chHv;
@@ -56,7 +68,12 @@ Zuletzt geaändert am:
         this->startKanal = ch;
     }
 
-    //Methode um DMXKanäle des Geräts, ohne Startkanal, einzustellen
+    /// @brief Methode um DMXKanäle des Geräts, ohne Startkanal, einzustellen
+    /// @param chHv Dmx Kanal des Heliumventils
+    /// @param chHf Dmx Kanal des Heliumdurchflussventils
+    /// @param chFog Dmx Kanal für Nebelmaschine
+    /// @param chFan  Dmx Kanal für PWM Lüfter
+    /// @param chWheel Dmx Kanal für Bubblewheel
     void HfbM::dmxSetup(int chHv, int chHf, int chFog, int chFan, int chWheel)
     {
         this->chHV = chHv;
@@ -66,23 +83,172 @@ Zuletzt geaändert am:
         this->chWHEEL = chWheel;
     }
 
-    //Methode um Startkanal einzustellen
+    /// @brief Methode um Startkanal einzustellen
+    /// @param ch Erster DMX Kanal der eingestellt wird.
     void HfbM::setFirstDmxCh(int ch)
     {
         this->startKanal = ch;
     }
 
+    /// @brief Testfunktion für ILI9341 Display
     void HfbM::displayTest()
     {
-        // Setze Hintergrundfarbe auf Schwarz
-        tft.fillScreen(ILI9341_BLACK);
-        // Setze Schriftfarbe auf Weiß
-        tft.setTextColor(ILI9341_WHITE);
-        // Setze Schriftgröße auf 36
-        tft.setTextSize(3);
-        // Zeichne "Hello World" auf dem Display
-        tft.drawString("Hello World", 20, 20);
-        tft.updateScreen();
+
     }
 
+    /// @brief Methode um den Hauptbildschirm des GUIs zu erzeugen
+    void HfbM::mainScreen()
+    {
+        //Linie oben
+        tft.drawLine(0, 18, 320, 18, ILI9341_ORANGE);
+        tft.drawLine(0, 17, 320, 17, ILI9341_ORANGE);
+
+        //Bar oben
+        tft.setFont(&FreeSansBold9pt7b);
+        tft.setCursor(1, 12);
+        tft.setTextColor(ILI9341_WHITE);
+        tft.setTextSize(0);
+        tft.println("DMX       Add:             Batt:");
+
+        tft.setCursor(120, 12);
+        tft.println(startKanal);                         
+        tft.drawRect(46, 0, 13, 13, ILI9341_WHITE);
+
+        //DMX indikator
+        dispDmxSq();
+
+        //Tastensperre gesetzt?
+        tastenSperre? drawLock() : drawUnlock();
+    }
+
+    
+
+    /// @brief Methode füllt anhand Membervariabel, dmxAktiv, Quadrat auf Display rot oder grün
+    void HfbM::dispDmxSq()
+    {
+        dmxAktiv? tft.fillRect(47, 1, 11, 11, ILI9341_GREEN) : tft.fillRect(47, 1, 11, 11, ILI9341_RED);
+    }
+
+    /// @brief Methode zeichnet Tastensperre Icon als GESPERRT
+    void HfbM::drawLock()
+    {
+        //Position von Lock
+        uint16_t x = 312, y = 6;
+        //delete unlock
+        tft.drawRect(x, y, 7, 6, ILI9341_BLACK);
+        tft.drawPixel(x+1, y-1, ILI9341_BLACK);
+        tft.drawPixel(x+1, y-2, ILI9341_BLACK);
+        tft.drawPixel(x+1, y-3, ILI9341_BLACK);
+        tft.drawPixel(x, y-4, ILI9341_BLACK);
+        tft.drawPixel(x-1, y-4, ILI9341_BLACK);
+        tft.drawPixel(x-2, y-4, ILI9341_BLACK);
+        tft.drawPixel(x-3, y-3, ILI9341_BLACK);
+        tft.drawPixel(x-3, y-2, ILI9341_BLACK);
+        tft.drawPixel(x-3, y-1, ILI9341_BLACK);
+        //draw lock
+        tft.drawRect(x, y, 7, 6, ILI9341_RED);
+        tft.drawPixel(x+1, y-1, ILI9341_RED);
+        tft.drawPixel(x+1, y-2, ILI9341_RED);
+        tft.drawPixel(x+1, y-3, ILI9341_RED);
+        tft.drawPixel(x+2, y-4, ILI9341_RED);
+        tft.drawPixel(x+3, y-4, ILI9341_RED);
+        tft.drawPixel(x+4, y-4, ILI9341_RED);
+        tft.drawPixel(x+5, y-3, ILI9341_RED);
+        tft.drawPixel(x+5, y-2, ILI9341_RED);
+        tft.drawPixel(x+5, y-1, ILI9341_RED);
+    }
+
+    /// @brief Methode zeichnet Tastensperre Icon als ENTSPERRT
+    void HfbM::drawUnlock()
+    {   
+        //Position von Lock
+        uint16_t x = 312, y = 6;
+        //delete lock
+        tft.drawRect(x, y, 7, 6, ILI9341_BLACK);
+        tft.drawPixel(x+1, y-1, ILI9341_BLACK);
+        tft.drawPixel(x+1, y-2, ILI9341_BLACK);
+        tft.drawPixel(x+1, y-3, ILI9341_BLACK);
+        tft.drawPixel(x+2, y-4, ILI9341_BLACK);
+        tft.drawPixel(x+3, y-4, ILI9341_BLACK);
+        tft.drawPixel(x+4, y-4, ILI9341_BLACK);
+        tft.drawPixel(x+5, y-3, ILI9341_BLACK);
+        tft.drawPixel(x+5, y-2, ILI9341_BLACK);
+        tft.drawPixel(x+5, y-1, ILI9341_BLACK);
+        //draw unlock
+        tft.drawRect(x, y, 7, 6, ILI9341_WHITE);
+        tft.drawPixel(x+1, y-1, ILI9341_WHITE);
+        tft.drawPixel(x+1, y-2, ILI9341_WHITE);
+        tft.drawPixel(x+1, y-3, ILI9341_WHITE);
+        tft.drawPixel(x, y-4, ILI9341_WHITE);
+        tft.drawPixel(x-1, y-4, ILI9341_WHITE);
+        tft.drawPixel(x-2, y-4, ILI9341_WHITE);
+        tft.drawPixel(x-3, y-3, ILI9341_WHITE);
+        tft.drawPixel(x-3, y-2, ILI9341_WHITE);
+        tft.drawPixel(x-3, y-1, ILI9341_WHITE);
+    }
+
+    /// @brief Methode setzt Tastensperre Icon entsprechend Membervariable "tastenSperre"
+    void HfbM:: switchLock()
+    {
+        if(tastenSperre)
+        {
+            //Position von Lock
+            uint16_t x = 312, y = 6;
+            //delete unlock
+            tft.drawRect(x, y, 7, 6, ILI9341_BLACK);
+            tft.drawPixel(x+1, y-1, ILI9341_BLACK);
+            tft.drawPixel(x+1, y-2, ILI9341_BLACK);
+            tft.drawPixel(x+1, y-3, ILI9341_BLACK);
+            tft.drawPixel(x, y-4, ILI9341_BLACK);
+            tft.drawPixel(x-1, y-4, ILI9341_BLACK);
+            tft.drawPixel(x-2, y-4, ILI9341_BLACK);
+            tft.drawPixel(x-3, y-3, ILI9341_BLACK);
+            tft.drawPixel(x-3, y-2, ILI9341_BLACK);
+            tft.drawPixel(x-3, y-1, ILI9341_BLACK);
+            //draw lock
+            tft.drawRect(x, y, 7, 6, ILI9341_RED);
+            tft.drawPixel(x+1, y-1, ILI9341_RED);
+            tft.drawPixel(x+1, y-2, ILI9341_RED);
+            tft.drawPixel(x+1, y-3, ILI9341_RED);
+            tft.drawPixel(x+2, y-4, ILI9341_RED);
+            tft.drawPixel(x+3, y-4, ILI9341_RED);
+            tft.drawPixel(x+4, y-4, ILI9341_RED);
+            tft.drawPixel(x+5, y-3, ILI9341_RED);
+            tft.drawPixel(x+5, y-2, ILI9341_RED);
+            tft.drawPixel(x+5, y-1, ILI9341_RED);
+        }
+        else if(!tastenSperre)
+        {
+            //Position von Lock
+            uint16_t x = 312, y = 6;
+            //delete lock
+            tft.drawRect(x, y, 7, 6, ILI9341_BLACK);
+            tft.drawPixel(x+1, y-1, ILI9341_BLACK);
+            tft.drawPixel(x+1, y-2, ILI9341_BLACK);
+            tft.drawPixel(x+1, y-3, ILI9341_BLACK);
+            tft.drawPixel(x+2, y-4, ILI9341_BLACK);
+            tft.drawPixel(x+3, y-4, ILI9341_BLACK);
+            tft.drawPixel(x+4, y-4, ILI9341_BLACK);
+            tft.drawPixel(x+5, y-3, ILI9341_BLACK);
+            tft.drawPixel(x+5, y-2, ILI9341_BLACK);
+            tft.drawPixel(x+5, y-1, ILI9341_BLACK);
+            //draw unlock
+            tft.drawRect(x, y, 7, 6, ILI9341_WHITE);
+            tft.drawPixel(x+1, y-1, ILI9341_WHITE);
+            tft.drawPixel(x+1, y-2, ILI9341_WHITE);
+            tft.drawPixel(x+1, y-3, ILI9341_WHITE);
+            tft.drawPixel(x, y-4, ILI9341_WHITE);
+            tft.drawPixel(x-1, y-4, ILI9341_WHITE);
+            tft.drawPixel(x-2, y-4, ILI9341_WHITE);
+            tft.drawPixel(x-3, y-3, ILI9341_WHITE);
+            tft.drawPixel(x-3, y-2, ILI9341_WHITE);
+            tft.drawPixel(x-3, y-1, ILI9341_WHITE);
+        }
+    }
+
+    /// @brief Methode um den Bildschirm für manuellen Betrieb zu erzeugen 
+    void HfbM:: manualScreen()
+    {
+        
+    }
     
