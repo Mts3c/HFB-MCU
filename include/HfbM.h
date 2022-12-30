@@ -14,6 +14,7 @@ Zuletzt geaändert am:
 #include "Adafruit_ILI9341.h"
 #include <Fonts/FreeSansBold9pt7b.h>
 #include "SPI.h"
+#include "myIcons.h"
 
 
 //Namespace define
