@@ -10,3 +10,6 @@
  ###### Done:
  ###### -C++ Class for machine mostly done
  ###### -Common Methods to Debug
+
+
+ ###### Gui Icons token from: https://icons8.com, converted to HEX Array. Stored in Progmem. See Header.
