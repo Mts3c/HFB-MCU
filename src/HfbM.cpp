@@ -2,7 +2,7 @@
 C++ Klasse für eine DMX gesteuerte Heiulm Nebel Seifenblasenmaschine
 Author: Mathis Rathjen 
 geschrieben am: 23.12.22
-Zuletzt geaändert am:
+Zuletzt geändert am:
 */
 #include "HfbM.h"
 #include "myIcons.h"
@@ -23,12 +23,14 @@ Zuletzt geaändert am:
     /// @brief Methode aktualisiert das DMXWerte Array
     void HfbM::getDmxFrame()
     {
-    int read = dmxRx.readPacket(packetBuf, startKanal, DMXCH);
-     if (read == DMXCH) {
-        if (memcmp(packetBuf, dmxValues, DMXCH) != 0) {
-        memcpy(dmxValues, packetBuf, 3);
+        newDmxData = false;
+        int read = dmxRx.readPacket(packetBuf, startKanal, DMXCH);
+        if (read == DMXCH) {
+            if (memcmp(packetBuf, dmxValues, DMXCH) != 0) {
+                memcpy(dmxValues, packetBuf, 3);
+                newDmxData = true;
+            }
         }
-    }
     }
 
     /// @brief Methode um Parameter der komponenten aus DMXV Array zu bestimmen
@@ -50,6 +52,7 @@ Zuletzt geaändert am:
         analogWrite(WHEELpin, radRPM);
         analogWrite(PWMpin, fanPWMDuty);
         analogWrite(FOGpin, nebelWert);
+        paramsUptodate = true;
     }
 
     /// @brief Methode um DMXKanäle des Geräts, inklusive des Startkanals zuzuweisen
@@ -90,6 +93,8 @@ Zuletzt geaändert am:
     {
         this->startKanal = ch;
     }
+
+
 
     /// @brief Testfunktion für ILI9341 Display
     void HfbM::displayTest()
@@ -247,9 +252,22 @@ Zuletzt geaändert am:
         }
     }
 
+    void HfbM:: drawActScreen(){
+        //2DO!!
+    }
+
     /// @brief Methode um den Bildschirm für manuellen Betrieb zu erzeugen 
     void HfbM:: manualScreen()
     {
         
+    }
+    /// @brief überprüft ob es eine touchscreen eingabe gab, falls ja werden die koordinaten in p geschrieben
+    void HfbM:: updateTsData()
+    {
+        if(ts.tirqTouched()){
+            p = ts.getPoint();
+            newTouched = true;
+        }
+        else newTouched = false;
     }
     

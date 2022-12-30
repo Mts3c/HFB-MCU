@@ -14,7 +14,8 @@ Zuletzt geaändert am:
 #include "Adafruit_ILI9341.h"
 #include <Fonts/FreeSansBold9pt7b.h>
 #include "SPI.h"
-
+#include <functional>
+#include "XPT2046_Touchscreen.h"
 
 //Namespace define
 namespace teensydmx = ::qindesign::teensydmx;
@@ -33,6 +34,8 @@ namespace teensydmx = ::qindesign::teensydmx;
 #define TFT_MOSI 11  // MOSI-Pin des Displays (für den Datentransfer von der MCU zum Display)
 #define TFT_CLK  13  // CLK-Pin des Displays (für den Datentransfer von der MCU zum Display)
 #define TFT_MISO 12  // MISO-Pin des Displays (für den Datentransfer von der MCU zum Display)
+#define tsCSpin 18   // Touchscreen CS pin
+#define tsIRQpin 19  // Touchscreen Interrupt pin
 
 //Serielle Schnitstelle
 #define serialPort Serial1
@@ -44,11 +47,13 @@ const int DMXCH = 512;
 class HfbM
 {
  private:
+    //Muss evtl referenz sein?
     //Memberobjekt von Klasse teensydmx
      teensydmx::Receiver dmxRx;
     //Memberobjekt von Klasse ILI9341_t3n
      Adafruit_ILI9341 tft;
-
+    //Memberobjekt Touchscreen
+     XPT2046_Touchscreen ts;
     //DMX-Kanalvariabeln
     int chHV;
     int chHF;
@@ -69,6 +74,10 @@ class HfbM
     bool dmxFehler;
 
     bool tastenSperre;
+    TS_Point p;
+    bool newTouched;
+    bool newDmxData;
+    bool paramsUptodate;
 
     //Variabeln/ Parameter der einzel Module
     bool heliumVentil;
@@ -89,7 +98,7 @@ class HfbM
 
  public:
  //Defaultkonstruktor
-    HfbM() : dmxRx(serialPort),  tft(TFT_CS, TFT_DC)
+    HfbM() : dmxRx(serialPort),  tft(TFT_CS, TFT_DC), ts(tsCSpin, tsIRQpin), p(0,0,0)
     {
         //Serial debug init
         firmwareNum = "V0.1 PTyp1";
@@ -103,6 +112,8 @@ class HfbM
         dmxAktiv = true;
         dmxFehler =false;
         tastenSperre = false;
+        newTouched = false;
+        paramsUptodate = true;
 
         chHV = 1;
         chHF = 2;
@@ -119,10 +130,26 @@ class HfbM
     };
  
  //Destruktor
-    ~HfbM() = default;
+   // ~HfbM() = default;
 
+   //Getter
+   bool getDmxAktiv(){
+      return(dmxAktiv);
+   }
 
+   bool getNewTouched(){
+      return(newTouched);
+   }
 
+   bool getNewDmxData(){
+      return(newDmxData);
+   }
+
+   bool getParamsUptodate(){
+      return(paramsUptodate);
+   }
+
+   
  //Methoden
     //Methode für SetupFunktion.
     void hwSetup();
@@ -139,6 +166,9 @@ class HfbM
     //Methode um Startkanal einzustellen
     void setFirstDmxCh(int ch);
 
+    //Touchscreen
+    void updateTsData();
+
     //Display Stuff
     //Schreibt Hello World auf Display
     void displayTest();
@@ -149,4 +179,5 @@ class HfbM
     void drawLock();
     void drawUnlock();
     void switchLock();
+    void drawActScreen();
 };
