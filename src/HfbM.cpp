@@ -13,11 +13,15 @@ Zuletzt geändert am:
     void HfbM::hwSetup()
     {
         //DMX
-        this->dmxRx.begin();
+        dmxRx.begin();
 
         //Display Stuff
-        this->tft.begin();
-        this->tft.setRotation(3);
+        tft.begin();
+        tft.setRotation(3);
+        tft.fillScreen(ILI9341_BLACK);
+        ts.begin();
+        ts.setRotation(3);
+
     }
 
     /// @brief Methode aktualisiert das DMXWerte Array, und ruft getParams() auf
@@ -104,10 +108,14 @@ Zuletzt geändert am:
     {
 
     }
-
+    void HfbM::dispBlack()
+    {
+        tft.fillScreen(ILI9341_BLACK);
+    }
     /// @brief Methode um den Hauptbildschirm des GUIs zu erzeugen
     void HfbM::mainScreen()
     {
+        
         //Linie oben
         tft.drawLine(0, 18, 320, 18, ILI9341_ORANGE);
         tft.drawLine(0, 17, 320, 17, ILI9341_ORANGE);
@@ -128,6 +136,7 @@ Zuletzt geändert am:
 
         //Tastensperre gesetzt?
         tastenSperre? drawLock() : drawUnlock();
+        mSUpdated = true;
     }
 
     
@@ -255,16 +264,26 @@ Zuletzt geändert am:
             tft.drawPixel(x-3, y-1, ILI9341_WHITE);
         }
     }
-    /// @brief Methode entscheidet mit switch case welches bildschirmlayout gezeichnet wird, und zeichnet diese
+    /// @brief Methode entscheidet inline mit switch case welches bildschirmlayout gezeichnet wird, und zeichnet diese
     void HfbM::drawActScreen()
     {
+        
         //2DO!!
+        //if(!mSUpdated)mainScreen();
+        mainScreen();
+        static int i, x;
+        drawIcon(0 +x, 28, i);
+        i++;
+        x = x + 64;
+        if (i>=5) i = x = 0;
     }
 
     /// @brief Methode zeichnet die aktuellen parameter für jeden bildschirm an die entsprechende stelle
     void HfbM::drawActValues()
     {
         //2DO!!
+        //Methode soll inline entscheiden können ín welchem Screen user ist und dann Werte im Layout updaten
+        //setCursor, dann print....
     }
 
     /// @brief Methode um den Bildschirm für manuellen Betrieb zu erzeugen 
@@ -275,11 +294,15 @@ Zuletzt geändert am:
     /// @brief überprüft ob es eine touchscreen eingabe gab, falls ja werden die koordinaten in p geschrieben
     void HfbM::updateTsData()
     {
+        newTouched = false;
+        //Using Paul Stoffregens Algorythm for fast checking TS via ISR, and then instantly taking data to Koordinate Piont p
         if(ts.tirqTouched()){
+            if(ts.touched()){
             p = ts.getPoint();
             newTouched = true;
+            }
         }
-        else newTouched = false;
+        
     }
 
     /// @brief Methode zeichnet Bitmap aus Array auf Bildschirm
@@ -288,9 +311,14 @@ Zuletzt geändert am:
     /// @param index IndexVariable der Bimap die gezeichnet werden soll
     void HfbM::drawIcon(int posX, int posY, int index)
     {
-        tft.drawBitmap(posX, posY, bitmap_allArray[index], 32, 32, ILI9341_BLACK);
+        tft.drawBitmap(posX, posY, bitmap_allArray[index], 64, 64, ILI9341_WHITE);
     }
 
+    void HfbM::drawEeIcon()
+    {
+         tft.drawBitmap(45, 0, bitmap_allArray[5], 225, 225, ILI9341_WHITE);
+    }
+    
     /// @brief Funktion zeichnet "barchart like slider" für manuellen betrieb
     /// @param posX startposition x oben links
     /// @param posY startposition y oben links

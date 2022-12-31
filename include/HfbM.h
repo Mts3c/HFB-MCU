@@ -30,12 +30,12 @@ namespace teensydmx = ::qindesign::teensydmx;
 //Displaypins
 #define TFT_CS   10  // Chip-Select-Pin des Displays
 #define TFT_DC   9   // Data/Command-Pin des Displays
-#define TFT_RST  8   // Reset-Pin des Displays
+//#define TFT_RST  8   // Reset-Pin des Displays
 #define TFT_MOSI 11  // MOSI-Pin des Displays (für den Datentransfer von der MCU zum Display)
-#define TFT_CLK  13  // CLK-Pin des Displays (für den Datentransfer von der MCU zum Display)
+//#define TFT_CLK  13  // CLK-Pin des Displays (für den Datentransfer von der MCU zum Display)
 #define TFT_MISO 12  // MISO-Pin des Displays (für den Datentransfer von der MCU zum Display)
-#define tsCSpin 18   // Touchscreen CS pin
-#define tsIRQpin 19  // Touchscreen Interrupt pin
+#define tsCSpin 8   // Touchscreen CS pin
+#define tsIRQpin 2  // Touchscreen Interrupt pin
 
 //Serielle Schnitstelle
 #define serialPort Serial1
@@ -78,6 +78,7 @@ class HfbM
     bool newTouched;
     bool newDmxData;
     bool paramsUptodate;
+    bool mSUpdated;
 
     //Variabeln/ Parameter der einzel Module
     bool heliumVentil;
@@ -110,12 +111,14 @@ class HfbM
         startKanal = 1;
         istAktiv = true;
         dmxAktiv = true;
-        dmxFehler =false;
+        dmxFehler = true;
         tastenSperre = false;
         // Zeigt an ob es eine touch eingabe gab auf die noch nicht reagiert wurde
         newTouched = false;
         // Zeigt an ob der letzte DMX Frame den Werten der Kanalvariabeln entspricht
         paramsUptodate = true;
+
+        mSUpdated = false;
 
         chHV = 1;
         chHF = 2;
@@ -183,6 +186,8 @@ class HfbM
     void switchLock();
     void drawActScreen();
     void drawIcon(int, int, int);
+    void drawEeIcon();
+    void dispBlack();
     void drawBarchart(int, int, int);
     void drawActValues();
 };
