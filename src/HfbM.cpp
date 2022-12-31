@@ -124,7 +124,7 @@ Zuletzt geändert am:
         tft.drawRect(46, 0, 13, 13, ILI9341_WHITE);
 
         //DMX indikator
-        dispDmxSq();
+        //dispDmxSq();
 
         //Tastensperre gesetzt?
         tastenSperre? drawLock() : drawUnlock();
@@ -133,9 +133,10 @@ Zuletzt geändert am:
     
 
     /// @brief Methode füllt anhand Membervariabel, dmxAktiv, Quadrat auf Display rot oder grün
-    void HfbM::dispDmxSq()
+    void HfbM::drawDmxIndic()
     {
-        dmxAktiv? tft.fillRect(47, 1, 11, 11, ILI9341_GREEN) : tft.fillRect(47, 1, 11, 11, ILI9341_RED);
+        dmxAktiv? tft.fillRect(47, 1, 11, 11, ILI9341_GREEN) : tft.fillRect(47, 1, 11, 11, ILI9341_WHITE);
+        if(dmxFehler) tft.fillRect(47, 1, 11, 11, ILI9341_RED);
     }
 
     /// @brief Methode zeichnet Tastensperre Icon als GESPERRT
@@ -197,7 +198,7 @@ Zuletzt geändert am:
     }
 
     /// @brief Methode setzt Tastensperre Icon entsprechend Membervariable "tastenSperre"
-    void HfbM:: switchLock()
+    void HfbM::switchLock()
     {
         if(tastenSperre)
         {
@@ -255,24 +256,24 @@ Zuletzt geändert am:
         }
     }
     /// @brief Methode entscheidet mit switch case welches bildschirmlayout gezeichnet wird, und zeichnet diese
-    void HfbM:: drawActScreen()
+    void HfbM::drawActScreen()
     {
         //2DO!!
     }
 
     /// @brief Methode zeichnet die aktuellen parameter für jeden bildschirm an die entsprechende stelle
-    void HfbM:: drawActValues()
+    void HfbM::drawActValues()
     {
         //2DO!!
     }
 
     /// @brief Methode um den Bildschirm für manuellen Betrieb zu erzeugen 
-    void HfbM:: manualScreen()
+    void HfbM::manualScreen()
     {
         
     }
     /// @brief überprüft ob es eine touchscreen eingabe gab, falls ja werden die koordinaten in p geschrieben
-    void HfbM:: updateTsData()
+    void HfbM::updateTsData()
     {
         if(ts.tirqTouched()){
             p = ts.getPoint();
@@ -297,7 +298,8 @@ Zuletzt geändert am:
     void HfbM::drawBarchart(int posX, int posY, int value)
     {
         value = map(value, 0, 255, 0, 127);
-        tft.drawRect(posX-4, posY-4, 38, 134, ILI9341_WHITE);
+        tft.drawRect(posX-4, posY-4, 42, 135, ILI9341_WHITE);
+        tft.fillRect(posX, posY, 34, 127, ILI9341_BLACK);
         tft.fillRect(posX, posY, 34, value, ILI9341_RED*value);
     }
     
