@@ -289,4 +289,15 @@ Zuletzt geändert am:
     {
         tft.drawBitmap(posX, posY, bitmap_allArray[index], 32, 32, ILI9341_BLACK);
     }
+
+    /// @brief Funktion zeichnet "barchart like slider" für manuellen betrieb
+    /// @param posX startposition x oben links
+    /// @param posY startposition y oben links
+    /// @param value Höhe = Wert der Sliders
+    void HfbM::drawBarchart(int posX, int posY, int value)
+    {
+        value = map(value, 0, 255, 0, 127);
+        tft.drawRect(posX-4, posY-4, 38, 134, ILI9341_WHITE);
+        tft.fillRect(posX, posY, 34, value, ILI9341_RED*value);
+    }
     
