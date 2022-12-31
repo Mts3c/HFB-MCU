@@ -183,5 +183,6 @@ class HfbM
     void switchLock();
     void drawActScreen();
     void drawIcon(int, int, int);
+    void drawBarchart(int, int, int);
     void drawActValues();
 };
