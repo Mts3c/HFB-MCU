@@ -177,7 +177,7 @@ class HfbM
     //GUI Methoden
     void mainScreen();
     void manualScreen();
-    void dispDmxSq();
+    void drawDmxIndic();
     void drawLock();
     void drawUnlock();
     void switchLock();

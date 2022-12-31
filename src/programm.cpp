@@ -45,6 +45,11 @@ void setup()
     taskManager.scheduleFixedRate(5, []{
         if(maschine.getNewDmxData() || !maschine.getParamsUptodate()) maschine.updateDevice(); // In GUI Implementierung muss paramsUptodate auf false gesetzt werden sobald benutzer manuelll betreibt
     });
+    //Event um DMX indikator auf Display anzupasen
+    taskManager.scheduleFixedRate(500, [] {
+        if(maschine.getDmxAktiv()) maschine.drawDmxIndic();
+    });
+
 
     //Signals & Slots 
 
