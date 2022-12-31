@@ -20,7 +20,7 @@ Zuletzt geändert am:
         this->tft.setRotation(3);
     }
 
-    /// @brief Methode aktualisiert das DMXWerte Array
+    /// @brief Methode aktualisiert das DMXWerte Array, und ruft getParams() auf
     void HfbM::getDmxFrame()
     {
         newDmxData = false;
@@ -29,6 +29,7 @@ Zuletzt geändert am:
             if (memcmp(packetBuf, dmxValues, DMXCH) != 0) {
                 memcpy(dmxValues, packetBuf, 3);
                 newDmxData = true;
+                paramsUptodate = false;
             }
         }
     }
@@ -42,17 +43,19 @@ Zuletzt geändert am:
         radRPM = dmxValues[chWHEEL-1];
         fanPWMDuty = dmxValues[chFAN-1];
         nebelWert = dmxValues[chFOG-1];
+        paramsUptodate = true;
     }
 
-    /// @brief Methode um alle aktuellen Parameter auf die entsprechenden Module anzuwenden
+    /// @brief Methode ruft getParams() auf um anschließend alle aktuellen Parameter auf die entsprechenden Module anzuwenden
     void HfbM::updateDevice()
     {
+        if(newDmxData)getParams();
+        newDmxData = false;
         digitalWrite(HVpin, heliumVentil);
         analogWrite(HFpin, heliumFluss);
         analogWrite(WHEELpin, radRPM);
         analogWrite(PWMpin, fanPWMDuty);
         analogWrite(FOGpin, nebelWert);
-        paramsUptodate = true;
     }
 
     /// @brief Methode um DMXKanäle des Geräts, inklusive des Startkanals zuzuweisen
@@ -251,8 +254,15 @@ Zuletzt geändert am:
             tft.drawPixel(x-3, y-1, ILI9341_WHITE);
         }
     }
+    /// @brief Methode entscheidet mit switch case welches bildschirmlayout gezeichnet wird, und zeichnet diese
+    void HfbM:: drawActScreen()
+    {
+        //2DO!!
+    }
 
-    void HfbM:: drawActScreen(){
+    /// @brief Methode zeichnet die aktuellen parameter für jeden bildschirm an die entsprechende stelle
+    void HfbM:: drawActValues()
+    {
         //2DO!!
     }
 
@@ -269,5 +279,14 @@ Zuletzt geändert am:
             newTouched = true;
         }
         else newTouched = false;
+    }
+
+    /// @brief Methode zeichnet Bitmap aus Array auf Bildschirm
+    /// @param posX X-StartKoordinate für bitmap
+    /// @param posY Y-StartKoordinate für bitmap
+    /// @param index IndexVariable der Bimap die gezeichnet werden soll
+    void HfbM::drawIcon(int posX, int posY, int index)
+    {
+        tft.drawBitmap(posX, posY, bitmap_allArray[index], 32, 32, ILI9341_BLACK);
     }
     

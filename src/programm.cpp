@@ -6,6 +6,11 @@ geschrieben am: 23.12.22
 Zuletzt geaändert am:
 
 From Microscope over Macrosscope to Globalscope
+
+Funktionsbaum:
+
+
+
 */
 
 #include "HfbM.h"
@@ -15,6 +20,7 @@ From Microscope over Macrosscope to Globalscope
 HfbM maschine;
 
 int fps = 0;
+bool fpsCountActive=true;
 
 static inline void countFps(const int, int&);
 
@@ -26,17 +32,21 @@ void setup()
 
     //2DO: Taskmanger 
     //Kann das funktionieren?
+    //Event um aktuellen DMX Frame zu empfangen
     taskManager.scheduleFixedRate(1, [] {
         if(maschine.getDmxAktiv()) maschine.getDmxFrame();
     });
-    taskManager.scheduleFixedRate(40, [] {
-        if (maschine.getNewTouched()) maschine.drawActScreen(); // Hier noch oder mit in if bed. mit variabel falls anzuzeigende werte geändert wurden 
+    //Event um aktuellen Bildscgirm Bild zu zeichnen
+    taskManager.scheduleFixedRate(30, [] {
+        maschine.updateTsData();                                // Muss aufgerufen werden um interrupt variable zu prüfen
+        if (maschine.getNewTouched()) maschine.drawActScreen(); // Hier noch "oder" mit in if bed. mit variabel falls anzuzeigende werte geändert wurden 
     });
-    taskManager.scheduleFixedRate(10, []{
+    //Event um die Geräte parameter zu setzten
+    taskManager.scheduleFixedRate(5, []{
         if(maschine.getNewDmxData() || !maschine.getParamsUptodate()) maschine.updateDevice(); // In GUI Implementierung muss paramsUptodate auf false gesetzt werden sobald benutzer manuelll betreibt
     });
 
-    //Signals & Slots
+    //Signals & Slots 
 
 }
 
@@ -45,7 +55,7 @@ void loop()
 
     //2DO: Taskmanger 
     taskManager.runLoop();
-    countFps(5, fps);
+    if(fpsCountActive)countFps(5, fps);
 }
 
 static inline void countFps(const int seconds, int& fps){
@@ -62,6 +72,7 @@ static inline void countFps(const int seconds, int& fps){
    // Serial.println(framesPerSecond);
     frameCount = 0;
     lastMillis = now;
+    fpsCountActive = false;
   }
     fps = framesPerSecond;
 }

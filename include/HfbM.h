@@ -112,7 +112,9 @@ class HfbM
         dmxAktiv = true;
         dmxFehler =false;
         tastenSperre = false;
+        // Zeigt an ob es eine touch eingabe gab auf die noch nicht reagiert wurde
         newTouched = false;
+        // Zeigt an ob der letzte DMX Frame den Werten der Kanalvariabeln entspricht
         paramsUptodate = true;
 
         chHV = 1;
@@ -180,4 +182,6 @@ class HfbM
     void drawUnlock();
     void switchLock();
     void drawActScreen();
+    void drawIcon(int, int, int);
+    void drawActValues();
 };
