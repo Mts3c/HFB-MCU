@@ -34,8 +34,7 @@ namespace teensydmx = ::qindesign::teensydmx;
 #define TFT_MOSI 11  // MOSI-Pin des Displays (für den Datentransfer von der MCU zum Display)
 //#define TFT_CLK  13  // CLK-Pin des Displays (für den Datentransfer von der MCU zum Display)
 #define TFT_MISO 12  // MISO-Pin des Displays (für den Datentransfer von der MCU zum Display)
-#define tsCSpin 8   // Touchscreen CS pin
-#define tsIRQpin 2  // Touchscreen Interrupt pin
+
 
 //Serielle Schnitstelle
 #define serialPort Serial1
@@ -47,13 +46,10 @@ const int DMXCH = 512;
 class HfbM
 {
  private:
-    //Muss evtl referenz sein?
     //Memberobjekt von Klasse teensydmx
      teensydmx::Receiver dmxRx;
     //Memberobjekt von Klasse ILI9341_t3n
      Adafruit_ILI9341 tft;
-    //Memberobjekt Touchscreen
-     XPT2046_Touchscreen ts;
     //DMX-Kanalvariabeln
     int chHV;
     int chHF;
@@ -74,11 +70,9 @@ class HfbM
     bool dmxFehler;
 
     bool tastenSperre;
-    TS_Point p;
-    bool newTouched;
-    bool newDmxData;
+
     bool paramsUptodate;
-    bool mSUpdated;
+    bool newDmxData;
 
     //Variabeln/ Parameter der einzel Module
     bool heliumVentil;
@@ -98,8 +92,12 @@ class HfbM
     bool noDmxFault = true;
 
  public:
+      
+   
+    bool tftUpdated; // private machen und getter setter
+
  //Defaultkonstruktor
-    HfbM() : dmxRx(serialPort),  tft(TFT_CS, TFT_DC), ts(tsCSpin, tsIRQpin), p(0,0,0)
+    HfbM() : dmxRx(serialPort),  tft(TFT_CS, TFT_DC)
     {
         //Serial debug init
         firmwareNum = "V0.1 PTyp1";
@@ -113,12 +111,11 @@ class HfbM
         dmxAktiv = true;
         dmxFehler = true;
         tastenSperre = false;
-        // Zeigt an ob es eine touch eingabe gab auf die noch nicht reagiert wurde
-        newTouched = false;
-        // Zeigt an ob der letzte DMX Frame den Werten der Kanalvariabeln entspricht
-        paramsUptodate = true;
+        paramsUptodate =false;
+        newDmxData = false;
 
-        mSUpdated = false;
+        tftUpdated = false;
+
 
         chHV = 1;
         chHF = 2;
@@ -142,9 +139,6 @@ class HfbM
       return(dmxAktiv);
    }
 
-   bool getNewTouched(){
-      return(newTouched);
-   }
 
    bool getNewDmxData(){
       return(newDmxData);
@@ -153,6 +147,7 @@ class HfbM
    bool getParamsUptodate(){
       return(paramsUptodate);
    }
+
 
    
  //Methoden
@@ -170,24 +165,24 @@ class HfbM
     void dmxSetup(int chHv, int chHf, int chFog, int chFan, int chWheel);
     //Methode um Startkanal einzustellen
     void setFirstDmxCh(int ch);
-
-    //Touchscreen
-    void updateTsData();
-
     //Display Stuff
     //Schreibt Hello World auf Display
     void displayTest();
     //GUI Methoden
+    void bootScreen();
     void mainScreen();
     void manualScreen();
     void drawDmxIndic();
     void drawLock();
     void drawUnlock();
     void switchLock();
-    void drawActScreen();
+    //void drawActScreen();
     void drawIcon(int, int, int);
     void drawEeIcon();
     void dispBlack();
     void drawBarchart(int, int, int);
     void drawActValues();
+    void dispDrawPage();
+    void drawBarLines(int, int, int, int, int);
+    void drawFuncIcons(int,int,int);
 };

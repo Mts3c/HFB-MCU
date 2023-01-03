@@ -18,10 +18,6 @@ Zuletzt geändert am:
         //Display Stuff
         tft.begin();
         tft.setRotation(3);
-        tft.fillScreen(ILI9341_BLACK);
-        ts.begin();
-        ts.setRotation(3);
-
     }
 
     /// @brief Methode aktualisiert das DMXWerte Array, und ruft getParams() auf
@@ -98,7 +94,8 @@ Zuletzt geändert am:
     /// @param ch Erster DMX Kanal der eingestellt wird.
     void HfbM::setFirstDmxCh(int ch)
     {
-        this->startKanal = ch;
+        if(0< ch >=512) this->startKanal = ch;
+        else startKanal =1;
     }
 
 
@@ -115,28 +112,30 @@ Zuletzt geändert am:
     /// @brief Methode um den Hauptbildschirm des GUIs zu erzeugen
     void HfbM::mainScreen()
     {
-        
         //Linie oben
         tft.drawLine(0, 18, 320, 18, ILI9341_ORANGE);
         tft.drawLine(0, 17, 320, 17, ILI9341_ORANGE);
-
         //Bar oben
         tft.setFont(&FreeSansBold9pt7b);
         tft.setCursor(1, 12);
         tft.setTextColor(ILI9341_WHITE);
         tft.setTextSize(0);
         tft.println("DMX       Add:             Batt:");
-
         tft.setCursor(120, 12);
         tft.println(startKanal);                         
         tft.drawRect(46, 0, 13, 13, ILI9341_WHITE);
-
         //DMX indikator
-        //dispDmxSq();
-
+        drawDmxIndic();
         //Tastensperre gesetzt?
         tastenSperre? drawLock() : drawUnlock();
-        mSUpdated = true;
+        drawIcon(0,26,5);
+        drawIcon(0,80,3);
+        drawIcon(0,136,2);
+        drawIcon(0,192,1);
+        drawIcon(160,26,4);
+        drawIcon(160,80,0);
+        tft.drawRect(160,130,160,110, ILI9341_WHITE);
+        tftUpdated = true;
     }
 
     
@@ -264,26 +263,19 @@ Zuletzt geändert am:
             tft.drawPixel(x-3, y-1, ILI9341_WHITE);
         }
     }
-    /// @brief Methode entscheidet inline mit switch case welches bildschirmlayout gezeichnet wird, und zeichnet diese
-    void HfbM::drawActScreen()
-    {
-        
-        //2DO!!
-        //if(!mSUpdated)mainScreen();
-        mainScreen();
-        static int i, x;
-        drawIcon(0 +x, 28, i);
-        i++;
-        x = x + 64;
-        if (i>=5) i = x = 0;
-    }
 
-    /// @brief Methode zeichnet die aktuellen parameter für jeden bildschirm an die entsprechende stelle
-    void HfbM::drawActValues()
+    /// @brief Rekursive Funktion um alle Icons horizontal NEbeneiner zu zeichnen
+    /// @param posX 
+    /// @param posY 
+    /// @param index 0=Bubbles, 1=Rotation, 2=Nebel, 3= Helium, 4=HeliumVentil, 5=Fan, 6= EE
+    void HfbM::drawFuncIcons(int posX, int posY, int index)
     {
-        //2DO!!
-        //Methode soll inline entscheiden können ín welchem Screen user ist und dann Werte im Layout updaten
-        //setCursor, dann print....
+        static int i, x;
+        tft.drawBitmap(posX+x, posY, bitmap_allArray[i], 48, 48, ILI9341_WHITE);
+        i++;
+        x = x + 50;
+        if (i>=6) i = x = 0;
+        else drawFuncIcons(posX, posY, index);
     }
 
     /// @brief Methode um den Bildschirm für manuellen Betrieb zu erzeugen 
@@ -291,43 +283,62 @@ Zuletzt geändert am:
     {
         
     }
-    /// @brief überprüft ob es eine touchscreen eingabe gab, falls ja werden die koordinaten in p geschrieben
-    void HfbM::updateTsData()
-    {
-        newTouched = false;
-        //Using Paul Stoffregens Algorythm for fast checking TS via ISR, and then instantly taking data to Koordinate Piont p
-        if(ts.tirqTouched()){
-            if(ts.touched()){
-            p = ts.getPoint();
-            newTouched = true;
-            }
-        }
-        
-    }
 
     /// @brief Methode zeichnet Bitmap aus Array auf Bildschirm
     /// @param posX X-StartKoordinate für bitmap
     /// @param posY Y-StartKoordinate für bitmap
-    /// @param index IndexVariable der Bimap die gezeichnet werden soll
+    /// @param index 0=Bubbles, 1=Rotation, 2=Nebel, 3= Helium, 4=HeliumVentil, 5=Fan, 6= EE
     void HfbM::drawIcon(int posX, int posY, int index)
     {
-        tft.drawBitmap(posX, posY, bitmap_allArray[index], 64, 64, ILI9341_WHITE);
+        tft.drawBitmap(posX, posY, bitmap_allArray[index], 48, 48, ILI9341_WHITE);
     }
 
+    /// @brief Zeichnet das EE Logo an festgestzten position
     void HfbM::drawEeIcon()
     {
-         tft.drawBitmap(45, 0, bitmap_allArray[5], 225, 225, ILI9341_WHITE);
+         tft.drawBitmap(45, 0, bitmap_allArray[6], 225, 225, ILI9341_WHITE);
     }
     
-    /// @brief Funktion zeichnet "barchart like slider" für manuellen betrieb
+    /// @brief Funktion zeichnet vertikalen "Slider" für manuellen betrieb
     /// @param posX startposition x oben links
     /// @param posY startposition y oben links
     /// @param value Höhe = Wert der Sliders
     void HfbM::drawBarchart(int posX, int posY, int value)
     {
-        value = map(value, 0, 255, 0, 127);
-        tft.drawRect(posX-4, posY-4, 42, 135, ILI9341_WHITE);
-        tft.fillRect(posX, posY, 34, 127, ILI9341_BLACK);
-        tft.fillRect(posX, posY, 34, value, ILI9341_RED*value);
+        static int altValue;
+        value = value /2;
+        tft.drawRect(posX, posY+4, 40, -135, ILI9341_WHITE);
+        if(altValue>value)tft.fillRect(posX+4, posY+altValue, 32, altValue-value, ILI9341_BLACK);
+        tft.fillRect(posX+4, posY, 32, -value, ILI9341_WHITE);
+        altValue = value;
     }
     
+    /// @brief Simuliert einen horizontalen Ladebalken, benutzt delay()!! Sollte daher nur im Setup vewendet werden
+    /// @param pHeigth Höhe der Loadingbar inkl Rahmen
+    /// @param pWidth Breite der Loadingbar inkl Rahmen
+    /// @param posx X-Koordinaze erster Pixel
+    /// @param posy Y-Koordinate erter Pixel
+    /// @param color Farbe derLoadigbar
+    void HfbM::drawBarLines(int pHeigth, int pWidth, int posx, int posy, int color)
+    {
+        tft.drawRect(posx-4,posy-4, pWidth+8,pHeigth+8,color);
+        for(int j = 0; j< pWidth; j++)
+        {
+            for(int i = 0; i< pHeigth; i++)
+            {
+            tft.drawLine(posx, posy+i,posx, posy+i, color);
+            }
+            posx++;
+        delay(500/j);
+        }
+    }
+
+    /// @brief Methode für Setup, zeichnet EE Logo und Ladebalken
+    void HfbM::bootScreen()
+    {
+    tft.fillScreen(ILI9341_BLACK);
+    tft.drawBitmap(45, 0, bitmap_allArray[6], 225, 225, ILI9341_WHITE);
+    drawBarLines(15, 240, 40, 220, ILI9341_WHITE);
+    delay(1000);
+    tft.fillScreen(ILI9341_BLACK);
+    }
